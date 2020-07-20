@@ -1,0 +1,128 @@
+---
+title: "Unsupervised Machine Learning"
+subtitle: "The Spark Foundation"
+author: "Bipul"
+output: html_document
+---
+
+```{r}
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+## **1. Data and Libraries**
+
+First we load the **required libraries** and the **iris dataset** required for the task.
+
+```{r}
+library(datasets)
+library(ggplot2)
+data(iris)
+```
+
+As the dataset has been loded in the system, we will look at the data now. We will call the **summary** function on the dataset **iris**.
+
+```{r}
+summary(iris)
+```
+
+Now we will look at the dataset using the **head** function on the **iris** dataset.
+
+```{r}
+head(iris)
+```
+
+Now looking at the **dim** fuction to check for the **dimenssions** of the **iris** dataset.
+
+```{r}
+dim(iris)
+```
+
+We see that the dataset conatins **150 rows** and **5 columns**.
+
+## **2. Preprocessing the Data**
+
+We know that **Clustering is a type of Unsupervised Learning** so we do not need the **Species** columns of the **iris dataset**.
+
+```{r}
+iris_new <- iris[, c(1,2,3,4)]
+specie <- iris[, "Species"]
+head(iris_new)
+table(specie)
+```
+
+So as we can see that the **iris_new** dataset contains only **4 columns** now.
+
+We do a bit of formatting of the dataset
+
+```{r}
+newfun <- function(x){
+  return ((x-min(x))/(max(x)-min(x)))
+}
+
+iris_new$Sepal.Length<- newfun(iris_new$Sepal.Length)
+iris_new$Sepal.Width<- newfun(iris_new$Sepal.Width)
+iris_new$Petal.Length<- newfun(iris_new$Petal.Length)
+iris_new$Petal.Width<- newfun(iris_new$Petal.Width)
+head(iris_new)
+```
+
+## **3. Clustering the Dataset**
+
+This is a dataset in which we know that 3 centers are going to be appropriate for prediction.  
+The R documentation tells us that the **k-means** method **"aims to partition the points into k groups such that the sum of squares from points to the assigned cluster centres is minimized."**  
+We will use the **kmeans** function given in R for doing the **clustering**.
+
+```{r}
+result <- kmeans(iris_new, 3)
+```
+
+We will now look at the **result** variable
+
+```{r}
+result
+```
+
+We see that the clustering has been completed and we will now see the different aspects of the **kmeans clustering**
+
+```{r}
+names(result)
+```
+
+So we see that there are **9 aspects** in the **result** variable. 
+
+```{r}
+table(specie, result$cluster)
+```
+ 
+So the **kmeans** was able to cluster **50 setosa**, **47 versicolor** and **36 virginica** which is fairly good.  Now we will plot these and compare it with the original plot to check if the clustering done is compareable or not.
+
+```{r}
+result$centers
+result$cluster
+```
+We make a plot between the **Sepal.Length** and **Sepal.Width** for the **original** as well as the **kmeans clustered** dataset to see if how they compare. 
+
+```{r}
+par(mfrow = c(1,2), mar = c(5, 4, 2, 2))
+plot(iris$Sepal.Length, iris$Sepal.Width, col = result$cluster, xlab = "Sepal Length", ylab = "Sepal Width", main = "Length VS Width(K-means)", pch = 19)
+plot(iris$Sepal.Length, iris$Sepal.Width, col = iris$Species,  xlab = "Sepal Length", ylab = "Sepal Width", main = "Length VS Width(original)", pch = 8)
+```
+
+
+We now make a plot for **Petal length** and **Petal Width** for the **original** and the **kmeans clustering** dataset to see how they compare.
+
+```{r}
+par(mfrow = c(1,2), mar = c(5, 4, 2, 2))
+plot(iris$Petal.Length, iris$Petal.Width , col = result$cluster, xlab = "Petal Length", ylab = "Petal Width", main = "Width VS Length(K-means)", pch = 3)
+plot(iris$Petal.Length, iris$Petal.Width, col = iris$Species,  xlab = "Petal Length", ylab = "Petal Width", main = "Width VS Length(original)", pch = 9)
+```
+
+## **4. Discussion**
+
+1. So we see that the clustering is done quite effectively. We can see **3 proper clusters** in for each plots.
+2. The **centers** and the **cluster** are also shown in the analysis.
+3. As we know that the initial points and the initial number for the **clusters** are chosen **randomly**, so, the plotting can be more efficient **if the number of starting points are more**.
+4. The error in clustering can be calculated by:  
+   a. Total number of **correctly classified points** = 50+47+36 = 143
+   b. Total number of **incorrect classifications** = 0+3+14 = 17
+   c. **Accuracy in clustering** = (1-(17/143)) = 0.88 or **88%**
